@@ -1,0 +1,17 @@
+{
+  "name": "stegoslop-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for StegoSlop",
+  "version": "0.1.0",
+  "license": "GPL-3.0",
+  "files": [
+    "stegoslop_wasm_bg.wasm",
+    "stegoslop_wasm.js",
+    "stegoslop_wasm.d.ts"
+  ],
+  "main": "stegoslop_wasm.js",
+  "types": "stegoslop_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

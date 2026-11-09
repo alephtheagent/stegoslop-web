@@ -1,0 +1,31 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export const bitplane: (a: number, b: number, c: number) => [number, number, number, number];
+export const bitplane_rgba: (a: number, b: number, c: number) => [number, number];
+export const compute_image_capacity: (a: number, b: number, c: number) => [number, number, number];
+export const embed_audio: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+export const embed_image: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+export const embed_image_rgba: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+export const extract_audio: (a: number, b: number, c: number) => [number, number, number, number];
+export const extract_image: (a: number, b: number, c: number) => [number, number, number, number];
+export const extract_image_rgba: (a: number, b: number, c: number) => [number, number, number, number];
+export const extract_raw_bits_audio: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const extract_raw_bits_image_rgba: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const pack: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+export const parse_audio: (a: number, b: number) => [number, number, number];
+export const rgba_to_png: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const unpack: (a: number, b: number, c: number, d: number) => [number, number, number];
+export const unpack_forced: (a: number, b: number, c: number, d: number) => [number, number, number];
+export const zero_width_decode: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const zero_width_encode: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+export const zero_width_has_hidden: (a: number, b: number) => number;
+export const zero_width_strip: (a: number, b: number) => [number, number];
+export const __wbindgen_malloc: (a: number, b: number) => number;
+export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_free: (a: number, b: number, c: number) => void;
+export const __wbindgen_exn_store: (a: number) => void;
+export const __externref_table_alloc: () => number;
+export const __wbindgen_externrefs: WebAssembly.Table;
+export const __externref_table_dealloc: (a: number) => void;
+export const __wbindgen_start: () => void;

@@ -1,0 +1,23 @@
+{
+  "name": "stegoslop-web",
+  "version": "0.1.0",
+  "description": "Client-side WebAssembly Steganography suite for Images, Audio, and Zero-Width Text",
+  "type": "module",
+  "scripts": {
+    "build:wasm": "cd crates/stegoslop-wasm && npx wasm-pack build --target web --out-dir ../../pkg",
+    "test:wasm": "node test.js",
+    "serve": "npx serve -l 8000 .",
+    "start": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "steganography",
+    "webassembly",
+    "rust",
+    "lsb",
+    "audio",
+    "image",
+    "zero-width",
+    "aes-gcm"
+  ],
+  "license": "GPL-3.0"
+}

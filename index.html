@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StegoSlop — Client-Side WebAssembly Steganography Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="logo-badge">⚡</div>
+        <div>
+          <div class="brand-title">
+            StegoSlop
+            <span class="version-chip">WASM v0.1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-status-area">
+        <div class="privacy-shield-chip" title="All processing happens 100% inside your browser via WebAssembly. Zero files or data ever leave your device.">
+          <span class="pulse-dot"></span>
+          <span>100% Client-Side Privacy (Zero Uploads)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav Tabs -->
+  <div class="nav-tabs-wrapper">
+    <nav class="nav-tabs">
+      <button class="nav-tab-btn active" data-tab="tab-inject">
+        <span>🔒</span> Inject Secret
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-extract">
+        <span>🔓</span> Extract Secret
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-xray">
+        <span>🔬</span> X-Ray Bit Plane
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-zerowidth">
+        <span>👻</span> Zero-Width Text
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-privacy">
+        <span>🛡️</span> Privacy & Specs
+      </button>
+    </nav>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="main-content">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: INJECT SECRET                       -->
+    <!-- ========================================== -->
+    <section id="tab-inject" class="tab-pane active">
+      <div class="grid-2col">
+        
+        <!-- Left: Carrier Selection -->
+        <div class="card">
+          <h2 class="card-title"><span>📁</span> 1. Select Carrier Media</h2>
+          <p class="card-subtitle">Drop an Image (PNG, JPG, WebP) or Audio (16-bit PCM WAV) to host your secret payload.</p>
+
+          <div id="inject-carrier-dropzone" class="dropzone">
+            <input type="file" id="inject-carrier-file" accept="image/*,audio/wav,audio/x-wav" style="display:none">
+            <div class="dropzone-icon">📥</div>
+            <div class="dropzone-text">Drag & drop carrier file here</div>
+            <div class="dropzone-hint">PNG, JPEG, WebP or 16-bit PCM WAV</div>
+          </div>
+
+          <div class="sample-bar">
+            <span class="sample-label">Quick samples:</span>
+            <button id="btn-sample-image" class="chip-btn" type="button">🖼️ Sample Image (256x256)</button>
+            <button id="btn-sample-audio" class="chip-btn" type="button">🎵 Sample Audio (3.0s WAV)</button>
+          </div>
+
+          <!-- Carrier Preview Card (Dynamic) -->
+          <div id="inject-carrier-preview" class="file-preview-card" style="display:none">
+            <div class="preview-left">
+              <img id="inject-preview-thumb" class="preview-thumb" alt="Preview">
+              <div class="preview-details">
+                <div id="inject-preview-name" class="preview-name">carrier.png</div>
+                <div id="inject-preview-meta" class="preview-meta">256 x 256 • 65,536 pixels</div>
+              </div>
+            </div>
+            <button id="btn-clear-inject-carrier" class="chip-btn" type="button" title="Remove carrier">✕</button>
+          </div>
+
+          <!-- Audio Player (if WAV loaded) -->
+          <div id="inject-audio-player-wrap" class="audio-player-container" style="display:none">
+            <div class="audio-header">
+              <div class="audio-chips">
+                <span id="audio-chip-format" class="badge-chip">16-bit PCM</span>
+                <span id="audio-chip-rate" class="badge-chip">44.1 kHz</span>
+                <span id="audio-chip-channels" class="badge-chip">Mono</span>
+              </div>
+              <span id="inject-audio-duration" class="audio-time">00:00 / 03:00</span>
+            </div>
+            <div class="audio-canvas-wrap">
+              <canvas id="inject-wavy-canvas" class="wavy-canvas"></canvas>
+            </div>
+            <div class="audio-controls">
+              <button id="btn-inject-audio-play" class="audio-play-btn" type="button">▶</button>
+              <span class="dropzone-hint">Drag or click on wavy scrubber to seek</span>
+            </div>
+          </div>
+
+          <!-- Bits-Per-Unit Selector -->
+          <div class="form-group" style="margin-top: 1.25rem;">
+            <label class="form-label">
+              <span>Embedding Density (Bits Per Unit)</span>
+              <span id="bpu-description" class="dropzone-hint">2 bpu (Balanced Stealth & Capacity)</span>
+            </label>
+            <div class="segmented-group">
+              <button class="seg-btn" data-bpu="1" type="button">1 Bit (Ultra Stealth)</button>
+              <button class="seg-btn active" data-bpu="2" type="button">2 Bits (Balanced)</button>
+              <button class="seg-btn" data-bpu="4" type="button">4 Bits (Max Capacity)</button>
+            </div>
+          </div>
+
+          <!-- Live Carrier Capacity Meter -->
+          <div class="capacity-card">
+            <div class="capacity-header">
+              <span>Live Carrier Capacity</span>
+              <span id="capacity-meter-label" class="capacity-val">0 B / 0 B (0%)</span>
+            </div>
+            <div class="progress-track">
+              <div id="capacity-meter-bar" class="progress-fill"></div>
+            </div>
+            <div class="capacity-footer">
+              <span id="capacity-carrier-info">No carrier loaded</span>
+              <span id="capacity-status-badge">Awaiting carrier</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Payload & Encryption -->
+        <div class="card">
+          <h2 class="card-title"><span>📝</span> 2. Secret Payload & Protection</h2>
+          <p class="card-subtitle">Enter your secret message or attach a confidential file to conceal.</p>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Payload Type</span>
+            </label>
+            <div class="segmented-group">
+              <button id="btn-payload-mode-text" class="seg-btn active" type="button">Text Message</button>
+              <button id="btn-payload-mode-file" class="seg-btn" type="button">Secret File</button>
+            </div>
+          </div>
+
+          <!-- Text Payload Mode -->
+          <div id="payload-text-container" class="form-group">
+            <label class="form-label" for="inject-secret-text">
+              <span>Secret Message</span>
+              <span id="secret-char-counter" class="dropzone-hint">0 bytes</span>
+            </label>
+            <textarea id="inject-secret-text" class="form-textarea" placeholder="Type or paste your secret message here..."></textarea>
+          </div>
+
+          <!-- File Payload Mode -->
+          <div id="payload-file-container" class="form-group" style="display:none">
+            <label class="form-label">
+              <span>Confidential File</span>
+              <span id="secret-file-size" class="dropzone-hint">0 bytes</span>
+            </label>
+            <div id="inject-payload-dropzone" class="dropzone" style="padding: 1.5rem;">
+              <input type="file" id="inject-payload-file" style="display:none">
+              <div class="dropzone-icon" style="font-size: 1.6rem;">📎</div>
+              <div id="inject-payload-filename" class="dropzone-text">Click or drop secret file here</div>
+              <div class="dropzone-hint">Any file type (PDF, ZIP, TXT, PNG, etc.)</div>
+            </div>
+          </div>
+
+          <!-- Optional Filename Preservation -->
+          <div class="form-group">
+            <label class="form-label" for="inject-filename-input">
+              <span>Virtual Filename (Optional)</span>
+              <span class="dropzone-hint">Extracted file will restore this name</span>
+            </label>
+            <input type="text" id="inject-filename-input" class="form-input" placeholder="e.g. secret_memo.txt">
+          </div>
+
+          <!-- AES-256-GCM Password Toggle Card -->
+          <div class="crypto-toggle-card">
+            <div class="toggle-header">
+              <div class="toggle-title">
+                <span>🔐</span>
+                <span>AES-256-GCM Encryption</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="inject-encrypt-toggle">
+                <span class="slider-switch"></span>
+              </label>
+            </div>
+            
+            <div id="inject-crypto-fields" class="crypto-fields">
+              <div class="form-group" style="margin-top: 0.75rem; margin-bottom: 0;">
+                <label class="form-label" for="inject-password-input">
+                  <span>Encryption Password</span>
+                  <span class="dropzone-hint">PBKDF2-HMAC-SHA256 (100,000 rounds)</span>
+                </label>
+                <div class="password-input-wrap">
+                  <input type="password" id="inject-password-input" class="form-input" placeholder="Enter high-entropy passphrase">
+                  <button id="btn-toggle-inject-pwd" class="pwd-toggle-btn" type="button" title="Show/Hide Password">👁️</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Primary Inject Action Button -->
+          <button id="btn-execute-inject" class="btn-primary" type="button">
+            <span>⚡</span> Inject Secret & Generate Stego File
+          </button>
+
+          <!-- Injection Output Result Card -->
+          <div id="inject-result-card" class="result-card hidden">
+            <div class="result-header">
+              <div style="font-weight: 700; color: var(--teal-primary); display: flex; align-items: center; gap: 0.4rem;">
+                <span>✨</span> Stego Carrier Generated Successfully!
+              </div>
+              <span id="result-badge-carrier" class="badge-chip">PNG Stego</span>
+            </div>
+            <p id="inject-result-summary" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Payload embedded using 2 bits per unit. All SLOP v1 header magic & CRC-32 intact.
+            </p>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button id="btn-download-stego" class="btn-primary" style="margin-top: 0; flex: 1;" type="button">
+                <span>💾</span> Download Stego File
+              </button>
+              <button id="btn-send-to-xray" class="btn-secondary" type="button">
+                <span>🔬</span> Inspect in X-Ray
+              </button>
+              <button id="btn-send-to-extract" class="btn-secondary" type="button">
+                <span>🔓</span> Test in Extract Tab
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: EXTRACT SECRET                      -->
+    <!-- ========================================== -->
+    <section id="tab-extract" class="tab-pane">
+      <div class="grid-2col">
+        
+        <!-- Left: Upload Stego File -->
+        <div class="card">
+          <h2 class="card-title"><span>📥</span> 1. Stego Carrier Media</h2>
+          <p class="card-subtitle">Upload the steganographic Image or Audio file containing the hidden payload.</p>
+
+          <div id="extract-carrier-dropzone" class="dropzone">
+            <input type="file" id="extract-carrier-file" accept="image/*,audio/wav,audio/x-wav" style="display:none">
+            <div class="dropzone-icon">🔍</div>
+            <div class="dropzone-text">Drop stego image or audio file here</div>
+            <div class="dropzone-hint">Auto-detects format, payload container, and CRC checksum</div>
+          </div>
+
+          <!-- Stego Carrier Preview -->
+          <div id="extract-carrier-preview" class="file-preview-card" style="display:none">
+            <div class="preview-left">
+              <img id="extract-preview-thumb" class="preview-thumb" alt="Preview">
+              <div class="preview-details">
+                <div id="extract-preview-name" class="preview-name">stego.png</div>
+                <div id="extract-preview-meta" class="preview-meta">Image • Ready for extraction</div>
+              </div>
+            </div>
+            <button id="btn-clear-extract-carrier" class="chip-btn" type="button">✕</button>
+          </div>
+
+          <!-- Bit-Depth Setting -->
+          <div class="form-group" style="margin-top: 1.25rem;">
+            <label class="form-label">
+              <span>Carrier Bit Density</span>
+              <span class="dropzone-hint">Must match bits-per-unit used when injected</span>
+            </label>
+            <div class="segmented-group">
+              <button class="seg-btn extract-bpu" data-bpu="1" type="button">1 Bit</button>
+              <button class="seg-btn extract-bpu active" data-bpu="2" type="button">2 Bits (Default)</button>
+              <button class="seg-btn extract-bpu" data-bpu="4" type="button">4 Bits</button>
+            </div>
+          </div>
+
+          <!-- Password if Encrypted -->
+          <div class="form-group">
+            <label class="form-label" for="extract-password-input">
+              <span>Decryption Password (if encrypted)</span>
+              <span class="dropzone-hint">AES-256-GCM</span>
+            </label>
+            <div class="password-input-wrap">
+              <input type="password" id="extract-password-input" class="form-input" placeholder="Enter passphrase (leave empty if unencrypted)">
+              <button id="btn-toggle-extract-pwd" class="pwd-toggle-btn" type="button" title="Show/Hide Password">👁️</button>
+            </div>
+          </div>
+
+          <!-- Extract Action Button -->
+          <button id="btn-execute-extract" class="btn-primary" type="button">
+            <span>🔓</span> Extract & Decrypt Secret Payload
+          </button>
+        </div>
+
+        <!-- Right: Extracted Result -->
+        <div class="card">
+          <h2 class="card-title"><span>🎁</span> 2. Extracted Secret</h2>
+          <p class="card-subtitle">Decoded secret payload and integrity verification details.</p>
+
+          <div id="extract-empty-state" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-tertiary);">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.5;">🔒</div>
+            <p>Upload a carrier file and click Extract to inspect the secret payload.</p>
+          </div>
+
+          <!-- Extracted Result Container -->
+          <div id="extract-result-content" style="display:none;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+              <span id="extract-chip-type" class="badge-chip">Type: Text</span>
+              <span id="extract-chip-crypto" class="badge-chip green">AES-256-GCM Verified</span>
+              <span id="extract-chip-crc" class="badge-chip green">CRC-32 Valid</span>
+              <span id="extract-chip-size" class="badge-chip purple">Size: 42 B</span>
+            </div>
+
+            <!-- Filename pill if specified -->
+            <div id="extract-filename-box" class="file-preview-card" style="margin-bottom: 1rem; display:none;">
+              <div class="preview-left">
+                <span style="font-size: 1.5rem;">📄</span>
+                <div class="preview-details">
+                  <div id="extract-filename-text" class="preview-name">secret_note.txt</div>
+                  <div id="extract-filesize-text" class="preview-meta">Restored original filename</div>
+                </div>
+              </div>
+              <button id="btn-download-extracted-file" class="btn-secondary" style="padding: 0.4rem 0.9rem;" type="button">
+                💾 Download
+              </button>
+            </div>
+
+            <!-- Text Content Display -->
+            <div id="extract-text-box-wrap" class="form-group" style="display:none;">
+              <label class="form-label">
+                <span>Decoded Message</span>
+                <button id="btn-copy-extracted-text" class="chip-btn" type="button">📋 Copy to Clipboard</button>
+              </label>
+              <textarea id="extract-text-display" class="form-textarea" readonly style="min-height: 180px;"></textarea>
+            </div>
+
+            <!-- Extracted Audio Player -->
+            <div id="extract-audio-player-wrap" class="audio-player-container" style="display:none; margin-bottom: 1rem;">
+              <div class="audio-header">
+                <span class="badge-chip">Extracted Audio Payload</span>
+                <span id="extract-audio-time" class="audio-time">00:00 / 00:00</span>
+              </div>
+              <div class="audio-canvas-wrap">
+                <canvas id="extract-wavy-canvas" class="wavy-canvas"></canvas>
+              </div>
+              <div class="audio-controls">
+                <button id="btn-extract-audio-play" class="audio-play-btn" type="button">▶</button>
+                <button id="btn-download-extracted-audio" class="chip-btn" type="button">💾 Download WAV</button>
+              </div>
+            </div>
+
+            <!-- Extracted Image Display -->
+            <div id="extract-image-box-wrap" class="form-group" style="display:none;">
+              <label class="form-label">
+                <span>Extracted Image</span>
+                <button id="btn-download-extracted-image" class="chip-btn" type="button">💾 Download Image</button>
+              </label>
+              <div style="background: #000; border-radius: var(--radius-sm); padding: 0.5rem; text-align: center;">
+                <img id="extract-image-preview" style="max-width: 100%; max-height: 250px; object-fit: contain;" alt="Extracted Image">
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: X-RAY BIT PLANE INSPECTOR           -->
+    <!-- ========================================== -->
+    <section id="tab-xray" class="tab-pane">
+      <div class="bitplane-container">
+        
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+            <div>
+              <h2 class="card-title"><span>🔬</span> Interactive X-Ray Bit Plane Viewer</h2>
+              <p class="card-subtitle" style="margin-bottom: 0;">Isolate RGB bit slices 0 through 7 to detect steganographic tampering and noise patterns.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="btn-xray-upload-trigger" class="btn-secondary" type="button">📂 Load Custom Image</button>
+              <input type="file" id="xray-file-input" accept="image/*" style="display:none">
+              <button id="btn-xray-sample" class="chip-btn" type="button">🖼️ Load Sample</button>
+            </div>
+          </div>
+
+          <!-- Main X-Ray Canvas Screen -->
+          <div class="xray-canvas-viewport">
+            <canvas id="xray-canvas" class="xray-canvas"></canvas>
+          </div>
+
+          <!-- Slider Controls -->
+          <div class="slider-container" style="margin-top: 1.25rem;">
+            <div class="slider-top">
+              <div>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Inspecting Plane:</span>
+                <span id="xray-bit-name" class="bit-tag" style="margin-left: 0.5rem;">Bit 0 (LSB — Carrier Plane)</span>
+              </div>
+              <span id="xray-bit-weight" class="badge-chip">Weight: 2^0 = 1 (0.39%)</span>
+            </div>
+
+            <input type="range" id="xray-bit-slider" class="bitplane-slider" min="0" max="7" step="1" value="0">
+            <div class="slider-ticks">
+              <span>0 (LSB)</span>
+              <span>1</span>
+              <span>2</span>
+              <span>3</span>
+              <span>4</span>
+              <span>5</span>
+              <span>6</span>
+              <span>7 (MSB)</span>
+            </div>
+          </div>
+
+          <!-- Action bar -->
+          <div class="xray-actions-bar" style="margin-top: 1rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="btn-xray-cycle" class="btn-secondary" type="button">▶ Auto-Cycle (0..7)</button>
+              <button id="btn-xray-invert" class="btn-secondary" type="button">🌓 Invert Polarity</button>
+              <button id="btn-xray-split" class="btn-secondary" type="button">⚖️ Split View (Original vs Plane)</button>
+            </div>
+            <div>
+              <button id="btn-xray-download" class="btn-primary" style="margin-top: 0; width: auto; padding: 0.65rem 1.4rem;" type="button">
+                💾 Export Bit Plane PNG
+              </button>
+            </div>
+          </div>
+
+          <!-- Forensic Explanation Card -->
+          <div style="background: var(--bg-surface-elevated); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-card); margin-top: 1.25rem;">
+            <div style="font-weight: 700; color: var(--teal-primary); font-size: 0.95rem; margin-bottom: 0.4rem;">
+              🧠 Steganography Forensic Insights
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.6;">
+              In natural uncompressed photographs, <strong>Bit 0 (LSB)</strong> looks like random thermal/sensor Gaussian noise. When encrypted data (AES-256-GCM) is embedded, the bits exhibit maximum entropy (pseudo-random uniform distribution). When unencrypted plaintext or patterned data is embedded, distinct structured stripes or sharp transitions become vividly visible in the X-Ray inspector! Higher bit planes (Bits 5, 6, 7) represent visual contours and luminance edges of the carrier image.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: ZERO-WIDTH TEXT STEGANOGRAPHY       -->
+    <!-- ========================================== -->
+    <section id="tab-zerowidth" class="tab-pane">
+      <div class="grid-2col">
+        
+        <!-- Left: Encode Zero-Width -->
+        <div class="card">
+          <h2 class="card-title"><span>👻</span> 1. Conceal Inside Text</h2>
+          <p class="card-subtitle">Encodes arbitrary secret data using invisible Unicode characters (<code style="color:var(--teal-primary);">\u200C</code>, <code style="color:var(--teal-primary);">\u200D</code>, <code style="color:var(--teal-primary);">\uFEFF</code>, <code style="color:var(--teal-primary);">\u2060</code>).</p>
+
+          <div class="form-group">
+            <label class="form-label" for="zw-cover-text">
+              <span>Visible Host Cover Text</span>
+              <div style="display: flex; gap: 0.35rem;">
+                <button id="btn-zw-sample1" class="chip-btn" type="button">Note Preset</button>
+                <button id="btn-zw-sample2" class="chip-btn" type="button">Status Preset</button>
+              </div>
+            </label>
+            <textarea id="zw-cover-text" class="form-textarea" placeholder="Enter visible text here...">Meeting moved to room 402 tomorrow at 10 AM. Please bring the quarterly metrics review.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="zw-secret-text">
+              <span>Secret Message to Hide</span>
+            </label>
+            <textarea id="zw-secret-text" class="form-textarea" placeholder="Enter confidential message...">Nuclear launch authorization code: ECHO-TANGO-994</textarea>
+          </div>
+
+          <!-- Password toggle -->
+          <div class="crypto-toggle-card">
+            <div class="toggle-header">
+              <div class="toggle-title">
+                <span>🔐</span>
+                <span>Encrypt with AES-256-GCM</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="zw-encrypt-toggle">
+                <span class="slider-switch"></span>
+              </label>
+            </div>
+            <div id="zw-crypto-fields" class="crypto-fields">
+              <div class="form-group" style="margin-top: 0.75rem; margin-bottom: 0;">
+                <input type="password" id="zw-password-input" class="form-input" placeholder="Passphrase for zero-width payload">
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-zw-encode" class="btn-primary" type="button">
+            <span>✨</span> Generate Invisible Stego Text
+          </button>
+
+          <!-- Generated Stego Result -->
+          <div id="zw-result-card" class="result-card hidden">
+            <div class="result-header">
+              <span class="badge-chip green">Stego Text Ready</span>
+              <button id="btn-copy-zw" class="btn-secondary" style="padding: 0.35rem 0.85rem;" type="button">📋 Copy to Clipboard</button>
+            </div>
+            
+            <label class="form-label" style="margin-top: 0.5rem;">
+              <span>Plain View (Invisible to humans):</span>
+            </label>
+            <textarea id="zw-output-plain" class="form-textarea" readonly style="min-height: 80px;"></textarea>
+
+            <label class="form-label" style="margin-top: 0.75rem;">
+              <span>Visualizer Mode (Revealing Zero-Width Bits):</span>
+            </label>
+            <div id="zw-output-visual" class="visual-preview-box"></div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-mono);">
+              <span id="zw-stat-visible">Visible chars: 0</span>
+              <span id="zw-stat-hidden">Hidden bits: 0</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Decode Zero-Width -->
+        <div class="card">
+          <h2 class="card-title"><span>🔍</span> 2. Detect & Reveal Secret</h2>
+          <p class="card-subtitle">Paste any text to detect hidden zero-width signatures and decrypt the hidden payload.</p>
+
+          <div class="form-group">
+            <label class="form-label" for="zw-decode-input">
+              <span>Text to Inspect</span>
+              <button id="btn-zw-paste-encoded" class="chip-btn" type="button">Paste From Left</button>
+            </label>
+            <textarea id="zw-decode-input" class="form-textarea" placeholder="Paste suspected zero-width stego text here..."></textarea>
+          </div>
+
+          <!-- Detection Status Box -->
+          <div id="zw-detector-banner" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-card); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; font-weight: 600;">
+              <span id="zw-detector-icon">⚪</span>
+              <span id="zw-detector-text">No text analyzed yet</span>
+            </div>
+            <span id="zw-detector-bits" class="badge-chip">0 bits</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="zw-decode-password">
+              <span>Password (if encrypted)</span>
+            </label>
+            <input type="password" id="zw-decode-password" class="form-input" placeholder="Enter passphrase">
+          </div>
+
+          <button id="btn-zw-decode" class="btn-primary" type="button">
+            <span>🔓</span> Extract Hidden Message
+          </button>
+
+          <!-- Revealed Secret Output -->
+          <div id="zw-revealed-card" class="result-card hidden">
+            <div class="result-header">
+              <span class="badge-chip green">Secret Revealed</span>
+              <button id="btn-copy-zw-revealed" class="chip-btn" type="button">📋 Copy</button>
+            </div>
+            <textarea id="zw-revealed-text" class="form-textarea" readonly style="min-height: 120px;"></textarea>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: PRIVACY & SPECIFICATION             -->
+    <!-- ========================================== -->
+    <section id="tab-privacy" class="tab-pane">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <h2 class="card-title" style="color: var(--teal-primary);">
+          <span>🛡️</span> 100% Client-Side Privacy Guarantee
+        </h2>
+        <p class="card-subtitle">Zero data transmission. No tracking. Pure local cryptography.</p>
+
+        <div style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+          <p>
+            StegoSlop is engineered as a <strong>100% client-side application</strong>. All steganographic embedding, bit slicing, decryption, and media synthesis happen entirely within your local browser's memory sandbox via <strong>WebAssembly compiled from Rust</strong>.
+          </p>
+          <div class="grid-2col" style="margin-top: 0.5rem;">
+            <div style="background: var(--bg-surface-elevated); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-card);">
+              <div style="font-weight: 700; color: #34d399; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+                <span>🔒</span> Zero Network Uploads
+              </div>
+              <p style="font-size: 0.84rem;">
+                Open your browser's Developer Tools (Network Tab): not a single byte of your photos, audio, passwords, or secret messages is transmitted to any server. You can even run this application completely offline without an internet connection.
+              </p>
+            </div>
+
+            <div style="background: var(--bg-surface-elevated); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-card);">
+              <div style="font-weight: 700; color: var(--teal-primary); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+                <span>⚡</span> Rust + WebAssembly
+              </div>
+              <p style="font-size: 0.84rem;">
+                Powered by a high-performance Rust core compiled to WASM. Memory is managed safely without buffer overflows, with direct SIMD/typed-array access for real-time 60fps bitplane rendering and sub-millisecond audio LSB processing.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title"><span>📐</span> StegoSlop Binary Protocol Specification (v1)</h2>
+        <p class="card-subtitle">Cross-compatible steganography protocol architecture across Android, Desktop, and Web.</p>
+
+        <div style="background: #000; border-radius: var(--radius-sm); padding: 1rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6; color: #a7f3d0; overflow-x: auto; border: 1px solid var(--border-subtle);">
++-------------------+----------------+---------------+-------------------+
+| Field             | Offset (Bytes) | Size (Bytes)  | Description       |
++-------------------+----------------+---------------+-------------------+
+| MAGIC_BYTES       | 0..3           | 4             | "SLOP" (0x534C4F50)|
+| PAYLOAD_TYPE      | 4              | 1             | 0x01:Text, 0x02:Img|
+|                   |                |               | 0x03:Aud, 0x04:File|
+| FLAGS             | 5              | 1             | Bit 0: Encrypted  |
+|                   |                |               | Bit 1-2: BPU code |
+|                   |                |               | Bit 3: HasFilename|
+| PAYLOAD_LEN       | 6..9           | 4             | Big-Endian uint32 |
+| CRC32_CHECKSUM    | 10..13         | 4             | Big-Endian uint32 |
+| [SALT] (optional) | 14..29         | 16            | PBKDF2 Salt       |
+| [IV] (optional)   | 30..41         | 12            | AES-GCM Nonce/IV  |
+| [FILENAME] (opt)  | variable       | 1 + N (<=255) | Length + UTF-8    |
+| PAYLOAD_DATA      | variable       | N             | Secret Ciphertext |
++-------------------+----------------+---------------+-------------------+
+        </div>
+
+        <div style="margin-top: 1.25rem; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.6;">
+          <ul style="padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li><strong>Cryptographic Standard:</strong> AES-256-GCM authenticated cipher with 128-bit authentication tag, derived from password via PBKDF2-HMAC-SHA256 with 100,000 iterations.</li>
+            <li><strong>Integrity:</strong> Hardware-accelerated CRC-32 checksum calculated over ciphertext guarantees detection of bit-rot, compression artifacts, or tampering.</li>
+            <li><strong>Carrier LSB Sequential Injection:</strong> Data is sequentially distributed across R, G, B channels (Alpha channel preserved 100% intact to prevent rendering glitches). Audio uses 16-bit PCM little-endian samples.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div>
+      StegoSlop WebAssembly Suite • Built with Rust, WASM, and Material 3 Expressive • 
+      <a href="https://github.com/alephtheagent/stegoslop-web" target="_blank" rel="noopener">GitHub</a> • 
+      <a href="https://git.plmtc.ru/p0lymatic/stegoslop-web" target="_blank" rel="noopener">Forgejo</a>
+    </div>
+  </footer>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Application Controller Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
