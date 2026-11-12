@@ -115,14 +115,38 @@ async function initApp() {
     bindExtractTab();
     bindXrayTab();
     bindZeroWidthTab();
+    bindAboutDialog();
 
     // 4. Preload default sample into X-Ray viewer for instant interactivity
     loadSampleImageIntoXray();
-
-    showToast('StegoSlop WASM engine ready — 100% Client-Side', 'success');
   } catch (err) {
     console.error('Failed to initialize StegoSlop WASM:', err);
-    showToast('Failed to initialize WebAssembly engine: ' + err.message, 'error', 6000);
+    showToast('Failed to initialize: ' + err.message, 'error', 6000);
+  }
+}
+
+function bindAboutDialog() {
+  const openBtn = document.getElementById('btn-open-about');
+  const closeBtn = document.getElementById('btn-close-about');
+  const dialog = document.getElementById('about-dialog');
+  if (openBtn && dialog) {
+    openBtn.addEventListener('click', () => dialog.showModal());
+  }
+  if (closeBtn && dialog) {
+    closeBtn.addEventListener('click', () => dialog.close());
+  }
+  if (dialog) {
+    dialog.addEventListener('click', (e) => {
+      const rect = dialog.getBoundingClientRect();
+      if (
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
+      ) {
+        dialog.close();
+      }
+    });
   }
 }
 
