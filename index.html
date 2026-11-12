@@ -12,188 +12,167 @@
 </head>
 <body>
 
-  <!-- Material 3 Top App Bar -->
+  <!-- Minimal Header -->
   <header class="app-header">
-    <div class="header-container">
-      <div class="brand-section">
-        <svg class="lemon-logo" viewBox="0 0 36 36" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="lemon-logo" viewBox="0 0 36 36" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
           <path fill="#5C913B" d="M11.405 3.339c6.48-1.275 8.453 1.265 11.655.084 3.202-1.181.093 2.82-.745 3.508-.84.688-8.141 4.809-11.307 3.298-3.166-1.511-3.182-6.186.397-6.89z"/>
           <path fill="#77B255" d="M15.001 16c-.304 0-.605-.138-.801-.4-.687-.916-1.308-1.955-1.965-3.056C9.967 8.749 7.396 4.446.783 2.976c-.539-.12-.879-.654-.759-1.193.12-.54.654-.878 1.193-.759 7.454 1.656 10.382 6.557 12.735 10.495.63 1.054 1.224 2.049 1.848 2.881.332.442.242 1.069-.2 1.4-.18.135-.39.2-.599.2z"/>
           <path fill="#FFCC4D" d="M34.3 31.534c.002-.017-.003-.028-.003-.043 2.774-5.335 2.647-15.113-3.346-21.107-5.801-5.8-13.68-5.821-18.767-4.067-1.579.614-2.917.066-3.815.965-.881.881-.351 2.719-.714 3.819-3.169 5.202-3.405 13.025 2.688 19.117 4.962 4.962 10.438 6.842 19.98 4.853.002-.002.005-.001.008-.002 1.148-.218 2.95.523 3.566-.094 1.085-1.085 0.309-2.358 0.403-3.441z"/>
           <path fill="#77B255" d="M8.208 6.583s-4.27-.59-6.857 4.599c-2.587 5.188.582 9.125.29 12.653-.293 3.53 1.566 1.265 2.621-.445s4.23-.4895 4.938-9.269c.707-4.376-.07-6.458-.992-7.538z"/>
         </svg>
-        <span class="brand-title">StegoSlop</span>
+        <span class="brand-name">stegoslop</span>
       </div>
 
-      <div class="header-actions">
-        <button id="btn-open-about" class="m3-icon-btn" type="button" aria-label="About" title="About">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-          </svg>
-        </button>
-      </div>
+      <!-- Minimal Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="tab-inject">inject</button>
+        <button class="nav-tab-btn" data-tab="tab-extract">extract</button>
+        <button class="nav-tab-btn" data-tab="tab-zerowidth">zero-width</button>
+        <button class="nav-tab-btn" data-tab="tab-xray">x-ray</button>
+      </nav>
+
+      <button id="btn-open-about" class="info-btn" type="button" aria-label="About">?</button>
     </div>
   </header>
 
-  <!-- Spring Sliding Pill Tabs -->
-  <div class="nav-tabs-wrapper">
-    <nav class="nav-tabs">
-      <button class="nav-tab-btn active" data-tab="tab-inject">Inject</button>
-      <button class="nav-tab-btn" data-tab="tab-extract">Extract</button>
-      <button class="nav-tab-btn" data-tab="tab-zerowidth">Zero-Width</button>
-      <button class="nav-tab-btn" data-tab="tab-xray">X-Ray</button>
-    </nav>
-  </div>
-
-  <!-- Main Content Layout -->
-  <main class="main-content">
+  <!-- Workspace -->
+  <main class="app-main">
 
     <!-- ========================================== -->
     <!-- TAB 1: INJECT                              -->
     <!-- ========================================== -->
     <section id="tab-inject" class="tab-pane active">
-      <div class="m3-stack">
+      <div class="minimal-panel">
 
-        <!-- Carrier Card -->
-        <div class="m3-card">
-          <h2 class="card-title">Carrier</h2>
-
-          <div id="inject-carrier-dropzone" class="dropzone">
+        <!-- Carrier Area -->
+        <div class="field-section">
+          <div id="inject-carrier-dropzone" class="mini-dropzone">
             <input type="file" id="inject-carrier-file" accept="image/*,audio/wav,audio/x-wav" style="display:none">
-            <div class="dropzone-text">Drop image or audio</div>
-            <div class="dropzone-hint">PNG or 16-bit PCM WAV</div>
+            <span class="dropzone-text">Drop carrier image or audio (PNG / WAV)</span>
+            <div class="mini-samples">
+              <button id="btn-sample-image" class="text-link" type="button">sample image</button>
+              <span class="sep">/</span>
+              <button id="btn-sample-audio" class="text-link" type="button">audio</button>
+            </div>
           </div>
 
-          <div class="sample-chips">
-            <button id="btn-sample-image" class="chip" type="button">Sample Image</button>
-            <button id="btn-sample-audio" class="chip" type="button">Sample Audio</button>
-          </div>
-
-          <!-- Carrier Preview -->
-          <div id="inject-carrier-preview" class="file-preview-card" style="display:none">
-            <div class="preview-left">
-              <img id="inject-preview-thumb" class="preview-thumb" alt="Preview">
-              <div class="preview-details">
-                <div id="inject-preview-name" class="preview-name">carrier.png</div>
-                <div id="inject-preview-meta" class="preview-meta">256 x 256</div>
+          <!-- Carrier Loaded State -->
+          <div id="inject-carrier-preview" class="file-loaded-strip" style="display:none">
+            <div class="strip-left">
+              <img id="inject-preview-thumb" class="strip-thumb" alt="Preview">
+              <div class="strip-info">
+                <span id="inject-preview-name" class="strip-name">carrier.png</span>
+                <span id="inject-preview-meta" class="strip-meta">256x256</span>
               </div>
             </div>
-            <button id="btn-clear-inject-carrier" class="icon-btn-small" type="button" title="Remove">✕</button>
+            <button id="btn-clear-inject-carrier" class="icon-close" type="button">✕</button>
           </div>
 
-          <!-- Audio Player (if WAV loaded) -->
-          <div id="inject-audio-player-wrap" class="audio-player-container" style="display:none">
-            <div class="audio-header">
-              <div class="audio-chips">
-                <span id="audio-chip-format" class="badge-chip">16-bit PCM</span>
-                <span id="audio-chip-rate" class="badge-chip">44.1 kHz</span>
-                <span id="audio-chip-channels" class="badge-chip">Mono</span>
+          <!-- Audio Waveform Player if WAV -->
+          <div id="inject-audio-player-wrap" class="mini-audio-player" style="display:none">
+            <div class="audio-strip-row">
+              <div class="audio-badges">
+                <span id="audio-chip-format" class="mini-badge">PCM</span>
+                <span id="audio-chip-rate" class="mini-badge">44.1k</span>
+                <span id="audio-chip-channels" class="mini-badge">Mono</span>
               </div>
-              <span id="inject-audio-duration" class="audio-time">00:00 / 00:00</span>
+              <span id="inject-audio-duration" class="mono-timer">00:00 / 00:00</span>
             </div>
-            <div class="audio-canvas-wrap">
+            <div class="audio-canvas-box">
               <canvas id="inject-wavy-canvas" class="wavy-canvas"></canvas>
             </div>
-            <div class="audio-controls">
-              <button id="btn-inject-audio-play" class="audio-play-btn" type="button">▶</button>
+            <div class="audio-btn-row">
+              <button id="btn-inject-audio-play" class="mini-play-btn" type="button">▶</button>
             </div>
           </div>
 
-          <!-- Bits Per Unit Selector -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">
-              <span>Bits per Unit</span>
-              <span id="bpu-description" style="display:none"></span>
-            </label>
-            <div class="segmented-group">
-              <button class="seg-btn" data-bpu="1" type="button">1 bit</button>
-              <button class="seg-btn active" data-bpu="2" type="button">2 bit</button>
-              <button class="seg-btn" data-bpu="4" type="button">4 bit</button>
+          <!-- Hairline Capacity Meter -->
+          <div class="capacity-line-wrap">
+            <div class="capacity-line-track">
+              <div id="capacity-meter-bar" class="capacity-line-fill"></div>
             </div>
-          </div>
-
-          <!-- Live Carrier Capacity Meter -->
-          <div class="capacity-card">
-            <div class="capacity-header">
-              <span>Capacity Usage</span>
-              <span id="capacity-meter-label" class="capacity-val">0 B / 0 B (0%)</span>
-            </div>
-            <div class="progress-track">
-              <div id="capacity-meter-bar" class="progress-fill"></div>
-            </div>
-            <div class="capacity-footer" style="display:none">
-              <span id="capacity-carrier-info"></span>
-              <span id="capacity-status-badge"></span>
+            <div class="capacity-line-info">
+              <span id="capacity-meter-label">0 B / 0 B (0%)</span>
+              <span id="capacity-carrier-info" style="display:none"></span>
+              <span id="capacity-status-badge" style="display:none"></span>
             </div>
           </div>
         </div>
 
-        <!-- Payload Card -->
-        <div class="m3-card">
-          <h2 class="card-title">Payload</h2>
-
-          <div class="segmented-group" style="margin-bottom: 0.85rem;">
-            <button id="btn-payload-mode-text" class="seg-btn active" type="button">Text</button>
-            <button id="btn-payload-mode-file" class="seg-btn" type="button">File</button>
+        <!-- Payload Area -->
+        <div class="field-section">
+          <div class="payload-tab-row">
+            <div class="pill-group">
+              <button id="btn-payload-mode-text" class="pill-btn active" type="button">Text</button>
+              <button id="btn-payload-mode-file" class="pill-btn" type="button">File</button>
+            </div>
+            <span id="secret-char-counter" class="mono-counter">0 B</span>
+            <span id="secret-file-size" class="mono-counter" style="display:none">0 B</span>
           </div>
 
-          <!-- Text Payload -->
-          <div id="payload-text-container" class="form-group">
-            <textarea id="inject-secret-text" class="form-textarea" placeholder="Secret text payload..."></textarea>
-            <span id="secret-char-counter" style="display:none">0 bytes</span>
+          <!-- Text Input -->
+          <div id="payload-text-container">
+            <textarea id="inject-secret-text" class="minimal-textarea" placeholder="Secret text payload..."></textarea>
           </div>
 
-          <!-- File Payload -->
-          <div id="payload-file-container" class="form-group" style="display:none">
-            <div id="inject-payload-dropzone" class="dropzone mini">
+          <!-- File Input -->
+          <div id="payload-file-container" style="display:none">
+            <div id="inject-payload-dropzone" class="mini-dropzone mini">
               <input type="file" id="inject-payload-file" style="display:none">
-              <div id="inject-payload-filename" class="dropzone-text">Drop secret file here</div>
+              <span id="inject-payload-filename" class="dropzone-text">Drop secret file</span>
             </div>
-            <span id="secret-file-size" style="display:none">0 bytes</span>
           </div>
 
-          <!-- Silent filename element for JS compatibility -->
           <input type="hidden" id="inject-filename-input" value="">
+        </div>
 
-          <!-- Encrypt Toggle -->
-          <div class="m3-switch-row">
-            <span class="switch-title">Encrypt with Password</span>
-            <label class="switch">
-              <input type="checkbox" id="inject-encrypt-toggle">
-              <span class="slider-switch"></span>
-            </label>
+        <!-- Density & Password Bar -->
+        <div class="controls-row">
+          <div class="density-selector">
+            <span class="label-quiet">Density</span>
+            <div class="segmented-control">
+              <button class="seg-btn" data-bpu="1" type="button">1b</button>
+              <button class="seg-btn active" data-bpu="2" type="button">2b</button>
+              <button class="seg-btn" data-bpu="4" type="button">4b</button>
+            </div>
+            <span id="bpu-description" style="display:none"></span>
           </div>
 
-          <div id="inject-crypto-fields" class="crypto-fields" style="display:none">
-            <div class="password-input-wrap">
-              <input type="password" id="inject-password-input" class="form-input" placeholder="Password">
-              <button id="btn-toggle-inject-pwd" class="pwd-toggle-btn" type="button">👁️</button>
-            </div>
+          <div class="encrypt-selector">
+            <label class="toggle-pill">
+              <input type="checkbox" id="inject-encrypt-toggle">
+              <span class="toggle-track"></span>
+              <span class="toggle-label">Password</span>
+            </label>
           </div>
         </div>
 
-        <!-- Inject Action Button -->
-        <button id="btn-execute-inject" class="btn-primary" type="button">
+        <!-- Password Field (Conditional) -->
+        <div id="inject-crypto-fields" class="field-section" style="display:none">
+          <div class="password-box">
+            <input type="password" id="inject-password-input" class="minimal-input" placeholder="Password">
+            <button id="btn-toggle-inject-pwd" class="icon-eye" type="button">👁</button>
+          </div>
+        </div>
+
+        <!-- Primary Action -->
+        <button id="btn-execute-inject" class="action-btn" type="button">
           Inject
         </button>
 
-        <!-- Result Card -->
-        <div id="inject-result-card" class="result-card hidden">
-          <div class="result-header">
-            <span class="badge-chip green">✓ Injected successfully</span>
-            <span id="result-badge-carrier" class="badge-chip">PNG Stego</span>
+        <!-- Result -->
+        <div id="inject-result-card" class="result-box hidden">
+          <div class="result-status-row">
+            <span class="status-ok">✓ Injected</span>
+            <span id="result-badge-carrier" class="mini-badge green">PNG</span>
           </div>
           <p id="inject-result-summary" style="display:none"></p>
           <div class="result-actions">
-            <button id="btn-download-stego" class="btn-primary" style="margin-top: 0; flex: 1;" type="button">
-              Save File
-            </button>
-            <button id="btn-send-to-xray" class="btn-secondary" type="button">
-              Inspect in X-Ray
-            </button>
-            <button id="btn-send-to-extract" class="btn-secondary" type="button">
-              Open in Extract
-            </button>
+            <button id="btn-download-stego" class="action-btn small" type="button">Save File</button>
+            <button id="btn-send-to-xray" class="action-btn secondary small" type="button">X-Ray</button>
+            <button id="btn-send-to-extract" class="action-btn secondary small" type="button">Extract</button>
           </div>
         </div>
 
@@ -204,107 +183,95 @@
     <!-- TAB 2: EXTRACT                             -->
     <!-- ========================================== -->
     <section id="tab-extract" class="tab-pane">
-      <div class="m3-stack">
+      <div class="minimal-panel">
 
-        <!-- Carrier Card -->
-        <div class="m3-card">
-          <h2 class="card-title">Carrier</h2>
-
-          <div id="extract-carrier-dropzone" class="dropzone">
+        <div class="field-section">
+          <div id="extract-carrier-dropzone" class="mini-dropzone">
             <input type="file" id="extract-carrier-file" accept="image/*,audio/wav,audio/x-wav" style="display:none">
-            <div class="dropzone-text">Drop stego file here</div>
-            <div class="dropzone-hint">PNG or 16-bit PCM WAV</div>
+            <span class="dropzone-text">Drop stego file (image / audio)</span>
           </div>
 
-          <!-- Stego Carrier Preview -->
-          <div id="extract-carrier-preview" class="file-preview-card" style="display:none">
-            <div class="preview-left">
-              <img id="extract-preview-thumb" class="preview-thumb" alt="Preview">
-              <div class="preview-details">
-                <div id="extract-preview-name" class="preview-name">stego.png</div>
-                <div id="extract-preview-meta" class="preview-meta">Carrier loaded</div>
+          <div id="extract-carrier-preview" class="file-loaded-strip" style="display:none">
+            <div class="strip-left">
+              <img id="extract-preview-thumb" class="strip-thumb" alt="Preview">
+              <div class="strip-info">
+                <span id="extract-preview-name" class="strip-name">stego.png</span>
+                <span id="extract-preview-meta" class="strip-meta">loaded</span>
               </div>
             </div>
-            <button id="btn-clear-extract-carrier" class="icon-btn-small" type="button">✕</button>
-          </div>
-
-          <!-- Bits per Unit -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Bits per Unit</label>
-            <div class="segmented-group">
-              <button class="seg-btn extract-bpu" data-bpu="1" type="button">1 bit</button>
-              <button class="seg-btn extract-bpu active" data-bpu="2" type="button">2 bit</button>
-              <button class="seg-btn extract-bpu" data-bpu="4" type="button">4 bit</button>
-            </div>
-          </div>
-
-          <!-- Password if Encrypted -->
-          <div class="form-group">
-            <label class="form-label" for="extract-password-input">Password (Optional)</label>
-            <div class="password-input-wrap">
-              <input type="password" id="extract-password-input" class="form-input" placeholder="Password">
-              <button id="btn-toggle-extract-pwd" class="pwd-toggle-btn" type="button">👁️</button>
-            </div>
+            <button id="btn-clear-extract-carrier" class="icon-close" type="button">✕</button>
           </div>
         </div>
 
-        <!-- Extract Action Button -->
-        <button id="btn-execute-extract" class="btn-primary" type="button">
+        <div class="controls-row">
+          <div class="density-selector">
+            <span class="label-quiet">Density</span>
+            <div class="segmented-control">
+              <button class="seg-btn extract-bpu" data-bpu="1" type="button">1b</button>
+              <button class="seg-btn extract-bpu active" data-bpu="2" type="button">2b</button>
+              <button class="seg-btn extract-bpu" data-bpu="4" type="button">4b</button>
+            </div>
+          </div>
+
+          <div class="password-box-extract">
+            <input type="password" id="extract-password-input" class="minimal-input" placeholder="Password (if encrypted)">
+            <button id="btn-toggle-extract-pwd" class="icon-eye" type="button">👁</button>
+          </div>
+        </div>
+
+        <button id="btn-execute-extract" class="action-btn" type="button">
           Extract
         </button>
 
         <div id="extract-empty-state" style="display:none"></div>
 
-        <!-- Extracted Result Container -->
-        <div id="extract-result-content" class="m3-card" style="display:none">
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem;">
-            <span id="extract-chip-type" class="badge-chip">Text</span>
-            <span id="extract-chip-crypto" class="badge-chip green">Decrypted</span>
-            <span id="extract-chip-crc" class="badge-chip green">CRC OK</span>
-            <span id="extract-chip-size" class="badge-chip">0 B</span>
+        <div id="extract-result-content" class="result-box" style="display:none">
+          <div class="result-status-row">
+            <div class="badge-group">
+              <span id="extract-chip-type" class="mini-badge">Text</span>
+              <span id="extract-chip-crypto" class="mini-badge green">Decrypted</span>
+              <span id="extract-chip-crc" class="mini-badge green">CRC OK</span>
+              <span id="extract-chip-size" class="mini-badge">0 B</span>
+            </div>
           </div>
 
-          <!-- Filename Box -->
-          <div id="extract-filename-box" class="file-preview-card" style="margin-bottom: 0.85rem; display:none;">
-            <div class="preview-left">
-              <span style="font-size: 1.3rem;">📄</span>
-              <div class="preview-details">
-                <div id="extract-filename-text" class="preview-name">payload.bin</div>
-                <div id="extract-filesize-text" class="preview-meta">Restored file</div>
+          <!-- Filename Row -->
+          <div id="extract-filename-box" class="file-loaded-strip" style="display:none; margin-top: 0.5rem;">
+            <div class="strip-left">
+              <span class="file-icon">📄</span>
+              <div class="strip-info">
+                <span id="extract-filename-text" class="strip-name">file.bin</span>
+                <span id="extract-filesize-text" class="strip-meta">0 B</span>
               </div>
             </div>
-            <button id="btn-download-extracted-file" class="btn-primary" style="margin-top: 0; padding: 0.45rem 1rem;" type="button">
-              Save
-            </button>
+            <button id="btn-download-extracted-file" class="action-btn small" type="button">Save</button>
           </div>
 
-          <!-- Text Content -->
-          <div id="extract-text-box-wrap" class="form-group" style="display:none;">
-            <textarea id="extract-text-display" class="form-textarea" readonly style="min-height: 140px;"></textarea>
-            <button id="btn-copy-extracted-text" class="btn-secondary" style="margin-top: 0.5rem;" type="button">
-              Copy
-            </button>
+          <!-- Extracted Text -->
+          <div id="extract-text-box-wrap" style="display:none; margin-top: 0.5rem;">
+            <textarea id="extract-text-display" class="minimal-textarea" readonly></textarea>
+            <button id="btn-copy-extracted-text" class="action-btn secondary small" style="margin-top: 0.4rem;" type="button">Copy</button>
           </div>
 
-          <!-- Audio Player -->
-          <div id="extract-audio-player-wrap" class="audio-player-container" style="display:none; margin-bottom: 0.85rem;">
-            <div class="audio-header">
-              <span class="badge-chip">Extracted Audio</span>
-              <span id="extract-audio-time" class="audio-time">00:00 / 00:00</span>
+          <!-- Extracted Audio Player -->
+          <div id="extract-audio-player-wrap" class="mini-audio-player" style="display:none; margin-top: 0.5rem;">
+            <div class="audio-strip-row">
+              <span class="mini-badge">Audio</span>
+              <span id="extract-audio-time" class="mono-timer">00:00 / 00:00</span>
             </div>
-            <div class="audio-canvas-wrap">
+            <div class="audio-canvas-box">
               <canvas id="extract-wavy-canvas" class="wavy-canvas"></canvas>
             </div>
-            <div class="audio-controls">
-              <button id="btn-extract-audio-play" class="audio-play-btn" type="button">▶</button>
-              <button id="btn-download-extracted-audio" class="btn-secondary" style="padding: 0.45rem 1rem;" type="button">Save Audio</button>
+            <div class="audio-btn-row">
+              <button id="btn-extract-audio-play" class="mini-play-btn" type="button">▶</button>
+              <button id="btn-download-extracted-audio" class="action-btn secondary small" type="button">Save WAV</button>
             </div>
           </div>
 
-          <!-- Image Display -->
-          <div id="extract-image-box-wrap" class="form-group" style="display:none; text-align: center;">
-            <img id="extract-image-preview" style="max-width: 100%; border-radius: 12px; margin-bottom: 0.5rem;" alt="Extracted Image">
-            <button id="btn-download-extracted-image" class="btn-secondary" style="padding: 0.45rem 1rem;" type="button">Save Image</button>
+          <!-- Extracted Image -->
+          <div id="extract-image-box-wrap" style="display:none; margin-top: 0.5rem; text-align: center;">
+            <img id="extract-image-preview" style="max-width: 100%; border-radius: 8px; margin-bottom: 0.4rem;" alt="Extracted Image">
+            <button id="btn-download-extracted-image" class="action-btn secondary small" type="button">Save Image</button>
           </div>
         </div>
 
@@ -315,51 +282,43 @@
     <!-- TAB 3: ZERO-WIDTH                          -->
     <!-- ========================================== -->
     <section id="tab-zerowidth" class="tab-pane">
-      <div class="m3-stack">
+      <div class="minimal-panel">
 
-        <!-- Conceal Card -->
-        <div class="m3-card">
-          <div class="card-header-row">
-            <h2 class="card-title">Conceal</h2>
-            <div class="sample-chips">
-              <button id="btn-zw-sample1" class="chip" type="button">Note</button>
-              <button id="btn-zw-sample2" class="chip" type="button">Status</button>
+        <!-- Conceal Section -->
+        <div class="minimal-subpanel">
+          <div class="subpanel-title-row">
+            <span class="subpanel-title">Conceal</span>
+            <div class="mini-samples">
+              <button id="btn-zw-sample1" class="text-link" type="button">note</button>
+              <span class="sep">/</span>
+              <button id="btn-zw-sample2" class="text-link" type="button">status</button>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="zw-cover-text">Cover Text</label>
-            <textarea id="zw-cover-text" class="form-textarea" rows="3" placeholder="Visible cover text...">Meeting rescheduled to 10:00 AM.</textarea>
-          </div>
+          <textarea id="zw-cover-text" class="minimal-textarea" rows="2" placeholder="Visible cover text...">Meeting rescheduled to 10:00 AM.</textarea>
+          <textarea id="zw-secret-text" class="minimal-textarea" rows="2" style="margin-top: 0.4rem;" placeholder="Secret message to hide...">Confidential coordinates</textarea>
 
-          <div class="form-group">
-            <label class="form-label" for="zw-secret-text">Secret Message</label>
-            <textarea id="zw-secret-text" class="form-textarea" rows="2" placeholder="Secret text payload...">Confidential message</textarea>
-          </div>
-
-          <div class="m3-switch-row">
-            <span class="switch-title">Encrypt with Password</span>
-            <label class="switch">
+          <div class="controls-row" style="margin-top: 0.4rem;">
+            <label class="toggle-pill">
               <input type="checkbox" id="zw-encrypt-toggle">
-              <span class="slider-switch"></span>
+              <span class="toggle-track"></span>
+              <span class="toggle-label">Password</span>
             </label>
+            <div id="zw-crypto-fields" style="display:none; flex: 1;">
+              <input type="password" id="zw-password-input" class="minimal-input" placeholder="Password">
+            </div>
           </div>
 
-          <div id="zw-crypto-fields" class="crypto-fields" style="display:none">
-            <input type="password" id="zw-password-input" class="form-input" placeholder="Password">
-          </div>
-
-          <button id="btn-zw-encode" class="btn-primary" type="button">
+          <button id="btn-zw-encode" class="action-btn" style="margin-top: 0.5rem;" type="button">
             Encode
           </button>
 
-          <!-- Result -->
-          <div id="zw-result-card" class="result-card hidden">
-            <div class="result-header">
-              <span class="badge-chip green">✓ Encoded</span>
-              <button id="btn-copy-zw" class="btn-secondary" style="padding: 0.35rem 0.85rem;" type="button">Copy</button>
+          <div id="zw-result-card" class="result-box hidden" style="margin-top: 0.5rem;">
+            <div class="result-status-row">
+              <span class="status-ok">✓ Encoded</span>
+              <button id="btn-copy-zw" class="action-btn secondary small" type="button">Copy</button>
             </div>
-            <textarea id="zw-output-plain" class="form-textarea" readonly rows="2" style="margin-top: 0.5rem;"></textarea>
+            <textarea id="zw-output-plain" class="minimal-textarea" readonly rows="2" style="margin-top: 0.4rem;"></textarea>
             <div id="zw-output-visual" class="visual-preview-box"></div>
             <div class="zw-stats-row">
               <span id="zw-stat-visible">Visible: 0</span>
@@ -368,38 +327,34 @@
           </div>
         </div>
 
-        <!-- Reveal Card -->
-        <div class="m3-card">
-          <div class="card-header-row">
-            <h2 class="card-title">Reveal</h2>
-            <button id="btn-zw-paste-encoded" class="chip" type="button">Paste</button>
+        <!-- Reveal Section -->
+        <div class="minimal-subpanel" style="margin-top: 1rem;">
+          <div class="subpanel-title-row">
+            <span class="subpanel-title">Reveal</span>
+            <button id="btn-zw-paste-encoded" class="text-link" type="button">paste</button>
           </div>
 
-          <div class="form-group">
-            <textarea id="zw-decode-input" class="form-textarea" rows="3" placeholder="Paste suspected text here..."></textarea>
-          </div>
+          <textarea id="zw-decode-input" class="minimal-textarea" rows="2" placeholder="Paste suspected text here..."></textarea>
 
           <div id="zw-detector-banner" class="detector-chip-row">
             <span id="zw-detector-icon">⚪</span>
             <span id="zw-detector-text">Awaiting input</span>
-            <span id="zw-detector-bits" class="badge-chip">0 bits</span>
+            <span id="zw-detector-bits" class="mini-badge">0b</span>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="zw-decode-password">Password (Optional)</label>
-            <input type="password" id="zw-decode-password" class="form-input" placeholder="Password">
+          <div class="controls-row">
+            <input type="password" id="zw-decode-password" class="minimal-input" placeholder="Password (optional)">
+            <button id="btn-zw-decode" class="action-btn" style="width: auto; padding: 0 1.25rem;" type="button">
+              Decode
+            </button>
           </div>
 
-          <button id="btn-zw-decode" class="btn-primary" type="button">
-            Decode
-          </button>
-
-          <div id="zw-revealed-card" class="result-card hidden">
-            <div class="result-header">
-              <span class="badge-chip green">✓ Revealed</span>
-              <button id="btn-copy-zw-revealed" class="btn-secondary" style="padding: 0.35rem 0.85rem;" type="button">Copy</button>
+          <div id="zw-revealed-card" class="result-box hidden" style="margin-top: 0.5rem;">
+            <div class="result-status-row">
+              <span class="status-ok">✓ Revealed</span>
+              <button id="btn-copy-zw-revealed" class="action-btn secondary small" type="button">Copy</button>
             </div>
-            <textarea id="zw-revealed-text" class="form-textarea" readonly rows="3" style="margin-top: 0.5rem;"></textarea>
+            <textarea id="zw-revealed-text" class="minimal-textarea" readonly rows="2" style="margin-top: 0.4rem;"></textarea>
           </div>
         </div>
 
@@ -410,82 +365,68 @@
     <!-- TAB 4: X-RAY                               -->
     <!-- ========================================== -->
     <section id="tab-xray" class="tab-pane">
-      <div class="m3-stack">
-        <div class="m3-card">
-          <div class="card-header-row">
-            <h2 class="card-title">X-Ray Bit Plane</h2>
-            <div class="sample-chips">
-              <button id="btn-xray-upload-trigger" class="chip" type="button">Load Image</button>
-              <input type="file" id="xray-file-input" accept="image/*" style="display:none">
-              <button id="btn-xray-sample" class="chip" type="button">Sample</button>
-            </div>
+      <div class="minimal-panel">
+        <div class="subpanel-title-row">
+          <span class="subpanel-title">X-Ray Inspector</span>
+          <div class="mini-samples">
+            <button id="btn-xray-upload-trigger" class="text-link" type="button">load image</button>
+            <input type="file" id="xray-file-input" accept="image/*" style="display:none">
+            <span class="sep">/</span>
+            <button id="btn-xray-sample" class="text-link" type="button">sample</button>
           </div>
+        </div>
 
-          <div class="xray-canvas-viewport">
-            <canvas id="xray-canvas" class="xray-canvas"></canvas>
-          </div>
+        <div class="xray-viewport">
+          <canvas id="xray-canvas" class="xray-canvas"></canvas>
+        </div>
 
-          <div class="slider-container" style="margin-top: 1rem;">
-            <div class="slider-top">
-              <span id="xray-bit-name" class="bit-tag">Bit 0 (LSB)</span>
-              <span id="xray-bit-weight" class="badge-chip">Weight: 1</span>
-            </div>
-            <input type="range" id="xray-bit-slider" class="bitplane-slider" min="0" max="7" step="1" value="0">
-            <div class="slider-ticks">
-              <span>0 (LSB)</span>
-              <span>1</span>
-              <span>2</span>
-              <span>3</span>
-              <span>4</span>
-              <span>5</span>
-              <span>6</span>
-              <span>7 (MSB)</span>
-            </div>
+        <div class="xray-control-box">
+          <div class="slider-meta">
+            <span id="xray-bit-name" class="mono-tag">Bit 0 (LSB)</span>
+            <span id="xray-bit-weight" class="mini-badge">Weight: 1</span>
           </div>
+          <input type="range" id="xray-bit-slider" class="minimal-slider" min="0" max="7" step="1" value="0">
+          <div class="slider-numbers">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+        </div>
 
-          <div class="xray-actions-bar" style="margin-top: 1rem;">
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button id="btn-xray-cycle" class="btn-secondary" type="button">Auto-Cycle</button>
-              <button id="btn-xray-invert" class="btn-secondary" type="button">Invert</button>
-              <button id="btn-xray-split" class="btn-secondary" type="button">Split</button>
-            </div>
-            <button id="btn-xray-download" class="btn-primary" style="margin-top: 0; width: auto; padding: 0.55rem 1.25rem;" type="button">
-              Save PNG
-            </button>
+        <div class="xray-btn-bar">
+          <div class="btn-group-left">
+            <button id="btn-xray-cycle" class="action-btn secondary small" type="button">Auto-Cycle</button>
+            <button id="btn-xray-invert" class="action-btn secondary small" type="button">Invert</button>
+            <button id="btn-xray-split" class="action-btn secondary small" type="button">Split</button>
           </div>
+          <button id="btn-xray-download" class="action-btn small" type="button">Save PNG</button>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- About Dialog (Material 3) -->
-  <dialog id="about-dialog" class="m3-dialog">
-    <div class="dialog-content">
-      <div class="dialog-header">
-        <svg viewBox="0 0 36 36" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+  <!-- About Dialog (Minimal) -->
+  <dialog id="about-dialog" class="mini-dialog">
+    <div class="dialog-inner">
+      <div class="brand" style="margin-bottom: 0.5rem;">
+        <svg class="lemon-logo" viewBox="0 0 36 36" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
           <path fill="#5C913B" d="M11.405 3.339c6.48-1.275 8.453 1.265 11.655.084 3.202-1.181.093 2.82-.745 3.508-.84.688-8.141 4.809-11.307 3.298-3.166-1.511-3.182-6.186.397-6.89z"/>
           <path fill="#77B255" d="M15.001 16c-.304 0-.605-.138-.801-.4-.687-.916-1.308-1.955-1.965-3.056C9.967 8.749 7.396 4.446.783 2.976c-.539-.12-.879-.654-.759-1.193.12-.54.654-.878 1.193-.759 7.454 1.656 10.382 6.557 12.735 10.495.63 1.054 1.224 2.049 1.848 2.881.332.442.242 1.069-.2 1.4-.18.135-.39.2-.599.2z"/>
           <path fill="#FFCC4D" d="M34.3 31.534c.002-.017-.003-.028-.003-.043 2.774-5.335 2.647-15.113-3.346-21.107-5.801-5.8-13.68-5.821-18.767-4.067-1.579.614-2.917.066-3.815.965-.881.881-.351 2.719-.714 3.819-3.169 5.202-3.405 13.025 2.688 19.117 4.962 4.962 10.438 6.842 19.98 4.853.002-.002.005-.001.008-.002 1.148-.218 2.95.523 3.566-.094 1.085-1.085 0.309-2.358 0.403-3.441z"/>
           <path fill="#77B255" d="M8.208 6.583s-4.27-.59-6.857 4.599c-2.587 5.188.582 9.125.29 12.653-.293 3.53 1.566 1.265 2.621-.445s4.23-.4895 4.938-9.269c.707-4.376-.07-6.458-.992-7.538z"/>
         </svg>
-        <div class="dialog-title">StegoSlop</div>
-        <div class="dialog-subtitle">Lossless LSB Steganography</div>
+        <span class="brand-name">stegoslop</span>
       </div>
-      <div class="dialog-body">
-        <p>100% in-browser WebAssembly engine compiled from Rust.</p>
-        <div class="dialog-chips">
-          <a href="https://github.com/alephtheagent/stegoslop-web" target="_blank" rel="noopener" class="chip">GitHub</a>
-          <a href="https://git.plmtc.ru/p0lymatic/stegoslop-web" target="_blank" rel="noopener" class="chip">Forgejo</a>
-        </div>
+      <p class="dialog-desc">Client-side LSB steganography engine in WebAssembly.</p>
+      <div class="dialog-links">
+        <a href="https://github.com/alephtheagent/stegoslop-web" target="_blank" rel="noopener">GitHub</a>
+        <span class="sep">·</span>
+        <a href="https://git.plmtc.ru/p0lymatic/stegoslop-web" target="_blank" rel="noopener">Forgejo</a>
       </div>
-      <div class="dialog-actions">
-        <button id="btn-close-about" class="btn-secondary" type="button">Close</button>
-      </div>
+      <button id="btn-close-about" class="action-btn secondary small" style="margin-top: 1rem;" type="button">Close</button>
     </div>
   </dialog>
 
-  <!-- Toast Notification Container -->
+  <!-- Toast Notifications -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Application Controller Entrypoint -->
