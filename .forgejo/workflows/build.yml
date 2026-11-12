@@ -1,0 +1,32 @@
+name: Build & Test StegoSlop Web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Verify Web & WASM Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Web Assets
+        run: |
+          test -f index.html
+          test -f pkg/stegoslop_wasm_bg.wasm
+          test -f pkg/stegoslop_wasm.js
+          test -f js/app.js
+          echo "Web and WASM bundle assets present."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Test Suite
+        run: node test.js

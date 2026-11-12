@@ -45,13 +45,23 @@ jobs:
       - name: Run verification tests
         run: node test.js
 
+      - name: Prepare Site Bundle
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r css _site/
+          cp -r js _site/
+          cp -r pkg _site/
+          cp -r samples _site/
+          echo "Site bundle prepared in _site"
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
