@@ -29,6 +29,8 @@ export function extract_raw_bits_image_rgba(rgba_pixels: Uint8Array | number[], 
 
 export function extract_robust_image(image_bytes: Uint8Array | number[], password?: string | null): Uint8Array;
 
+export function extract_robust_image_forced(image_bytes: Uint8Array | number[], password?: string | null): any;
+
 export function pack(payload_type: number, data: Uint8Array | number[], password: string | null | undefined, bits_per_unit: number, file_name?: string | null): Uint8Array;
 
 export function parse_audio(wav_bytes: Uint8Array | number[]): any;
@@ -65,6 +67,7 @@ export interface InitOutput {
     readonly extract_raw_bits_audio: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly extract_raw_bits_image_rgba: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly extract_robust_image: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly extract_robust_image_forced: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly pack: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly parse_audio: (a: number, b: number) => [number, number, number];
     readonly rgba_to_png: (a: number, b: number, c: number, d: number) => [number, number, number, number];

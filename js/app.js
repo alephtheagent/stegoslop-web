@@ -816,15 +816,15 @@ async function executeExtract() {
 
     if (carrierType === 'image' && (state.extract.engine === 'robust' || state.extract.engine === 'auto')) {
       try {
-        const raw = wasm.extract_robust_image(carrierBytes, password);
+        const res = wasm.extract_robust_image_forced(carrierBytes, password);
         unpacked = {
           payload_type: 1,
           payload_type_name: 'Robust Text',
-          data: raw,
-          is_encrypted: !!password,
+          data: res.data,
+          is_encrypted: res.is_encrypted,
           bits_per_unit: 0,
           file_name: null,
-          is_corrupted: false,
+          is_corrupted: res.is_corrupted,
         };
         isRobust = true;
       } catch (err) {

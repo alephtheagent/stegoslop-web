@@ -15,6 +15,7 @@ export const extract_image_rgba: (a: number, b: number, c: number) => [number, n
 export const extract_raw_bits_audio: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const extract_raw_bits_image_rgba: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const extract_robust_image: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const extract_robust_image_forced: (a: number, b: number, c: number, d: number) => [number, number, number];
 export const pack: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const parse_audio: (a: number, b: number) => [number, number, number];
 export const rgba_to_png: (a: number, b: number, c: number, d: number) => [number, number, number, number];

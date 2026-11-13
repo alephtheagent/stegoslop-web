@@ -290,6 +290,14 @@ pub fn embed_robust_image(
     encode_png_buffer(&raw, width, height)
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct RobustResult {
+    #[serde(with = "serde_bytes")]
+    pub data: Vec<u8>,
+    pub is_encrypted: bool,
+    pub is_corrupted: bool,
+}
+
 #[wasm_bindgen]
 pub fn extract_robust_image(
     image_bytes: &[u8],
@@ -301,4 +309,26 @@ pub fn extract_robust_image(
 
     stegoslop_core::extract_robust_from_rgba(img.as_raw(), width, height, pwd)
         .map_err(err_to_js)
+}
+
+#[wasm_bindgen]
+pub fn extract_robust_image_forced(
+    image_bytes: &[u8],
+    password: Option<String>,
+) -> Result<JsValue, JsValue> {
+    let img = image::load_from_memory(image_bytes).map_err(err_to_js)?.to_rgba8();
+    let (width, height) = img.dimensions();
+    let pwd = password.as_deref().filter(|s| !s.is_empty());
+
+    let res = stegoslop_core::extract_robust_from_rgba_forced(img.as_raw(), width, height, pwd)
+        .map_err(err_to_js)?;
+
+    let out = RobustResult {
+        data: res.data,
+        is_encrypted: res.is_encrypted,
+        is_corrupted: res.is_corrupted,
+    };
+
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_bytes_as_arrays(false);
+    out.serialize(&serializer).map_err(err_to_js)
 }

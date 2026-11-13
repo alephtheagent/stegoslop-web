@@ -293,6 +293,30 @@ export function extract_robust_image(image_bytes, password) {
 }
 
 /**
+ * @param {Uint8Array | number[]} image_bytes
+ * @param {string | null} [password]
+ * @returns {any}
+ */
+export function extract_robust_image_forced(image_bytes, password) {
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(image_bytes, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.extract_robust_image_forced(ptr0, len0, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
  * @param {number} payload_type
  * @param {Uint8Array | number[]} data
  * @param {string | null | undefined} password
