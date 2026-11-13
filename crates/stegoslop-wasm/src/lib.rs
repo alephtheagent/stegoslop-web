@@ -267,3 +267,38 @@ pub fn zero_width_has_hidden(text: &str) -> bool {
 pub fn zero_width_strip(text: &str) -> String {
     zero_width::strip_hidden_data(text)
 }
+
+#[wasm_bindgen]
+pub fn compute_robust_image_capacity(width: u32, height: u32, is_encrypted: bool) -> usize {
+    stegoslop_core::compute_robust_capacity(width, height, is_encrypted)
+}
+
+#[wasm_bindgen]
+pub fn embed_robust_image(
+    image_bytes: &[u8],
+    secret_data: &[u8],
+    password: Option<String>,
+) -> Result<Vec<u8>, JsValue> {
+    let img = image::load_from_memory(image_bytes).map_err(err_to_js)?.to_rgba8();
+    let (width, height) = img.dimensions();
+    let mut raw = img.into_raw();
+    let pwd = password.as_deref().filter(|s| !s.is_empty());
+
+    stegoslop_core::embed_robust_in_rgba(&mut raw, width, height, secret_data, pwd)
+        .map_err(err_to_js)?;
+
+    encode_png_buffer(&raw, width, height)
+}
+
+#[wasm_bindgen]
+pub fn extract_robust_image(
+    image_bytes: &[u8],
+    password: Option<String>,
+) -> Result<Vec<u8>, JsValue> {
+    let img = image::load_from_memory(image_bytes).map_err(err_to_js)?.to_rgba8();
+    let (width, height) = img.dimensions();
+    let pwd = password.as_deref().filter(|s| !s.is_empty());
+
+    stegoslop_core::extract_robust_from_rgba(img.as_raw(), width, height, pwd)
+        .map_err(err_to_js)
+}

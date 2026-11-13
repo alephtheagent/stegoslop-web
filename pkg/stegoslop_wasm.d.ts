@@ -7,11 +7,15 @@ export function bitplane_rgba(rgba_pixels: Uint8Array | number[], bit_index: num
 
 export function compute_image_capacity(width: number, height: number, bits_per_channel: number): number;
 
+export function compute_robust_image_capacity(width: number, height: number, is_encrypted: boolean): number;
+
 export function embed_audio(wav_bytes: Uint8Array | number[], payload_container: Uint8Array | number[], bits_per_sample: number): Uint8Array;
 
 export function embed_image(image_bytes: Uint8Array | number[], payload_container: Uint8Array | number[], bits_per_channel: number): Uint8Array;
 
 export function embed_image_rgba(rgba_pixels: Uint8Array | number[], payload_container: Uint8Array | number[], bits_per_channel: number): Uint8Array;
+
+export function embed_robust_image(image_bytes: Uint8Array | number[], secret_data: Uint8Array | number[], password?: string | null): Uint8Array;
 
 export function extract_audio(wav_bytes: Uint8Array | number[], bits_per_sample: number): Uint8Array;
 
@@ -22,6 +26,8 @@ export function extract_image_rgba(rgba_pixels: Uint8Array | number[], bits_per_
 export function extract_raw_bits_audio(wav_bytes: Uint8Array | number[], bits_per_sample: number, max_bytes: number): Uint8Array;
 
 export function extract_raw_bits_image_rgba(rgba_pixels: Uint8Array | number[], bits_per_channel: number, max_bytes: number): Uint8Array;
+
+export function extract_robust_image(image_bytes: Uint8Array | number[], password?: string | null): Uint8Array;
 
 export function pack(payload_type: number, data: Uint8Array | number[], password: string | null | undefined, bits_per_unit: number, file_name?: string | null): Uint8Array;
 
@@ -48,14 +54,17 @@ export interface InitOutput {
     readonly bitplane: (a: number, b: number, c: number) => [number, number, number, number];
     readonly bitplane_rgba: (a: number, b: number, c: number) => [number, number];
     readonly compute_image_capacity: (a: number, b: number, c: number) => [number, number, number];
+    readonly compute_robust_image_capacity: (a: number, b: number, c: number) => number;
     readonly embed_audio: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly embed_image: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly embed_image_rgba: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+    readonly embed_robust_image: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly extract_audio: (a: number, b: number, c: number) => [number, number, number, number];
     readonly extract_image: (a: number, b: number, c: number) => [number, number, number, number];
     readonly extract_image_rgba: (a: number, b: number, c: number) => [number, number, number, number];
     readonly extract_raw_bits_audio: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly extract_raw_bits_image_rgba: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly extract_robust_image: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly pack: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly parse_audio: (a: number, b: number) => [number, number, number];
     readonly rgba_to_png: (a: number, b: number, c: number, d: number) => [number, number, number, number];

@@ -436,10 +436,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.density-selector {
+.density-selector, .mode-selector {
   display: flex;
   align-items: center;
   gap: 0.4rem;

@@ -59,6 +59,16 @@ async function runTests() {
   }
   console.log('✓ Audio 16-bit PCM WAV embed/extract roundtrip passed');
 
+  // 5. Test Robust Compression-Resistant Stego
+  const robustSecret = 'WARFARE_ROBUST_BISMUTH_2026';
+  const robustPng = wasmModule.embed_robust_image(pngBytes, new TextEncoder().encode(robustSecret), 'bismuth_key');
+  const extractedRobust = wasmModule.extract_robust_image(robustPng, 'bismuth_key');
+  const extractedRobustText = new TextDecoder().decode(extractedRobust);
+  if (extractedRobustText !== robustSecret) {
+    throw new Error(`Robust stego roundtrip failed: got "${extractedRobustText}"`);
+  }
+  console.log('✓ Robust DWT-QIM embed/extract roundtrip passed');
+
   console.log('--- ALL VERIFICATION TESTS PASSED SUCCESSFULLY! ---');
 }
 

@@ -48,6 +48,17 @@ export function compute_image_capacity(width, height, bits_per_channel) {
 }
 
 /**
+ * @param {number} width
+ * @param {number} height
+ * @param {boolean} is_encrypted
+ * @returns {number}
+ */
+export function compute_robust_image_capacity(width, height, is_encrypted) {
+    const ret = wasm.compute_robust_image_capacity(width, height, is_encrypted);
+    return ret >>> 0;
+}
+
+/**
  * @param {Uint8Array | number[]} wav_bytes
  * @param {Uint8Array | number[]} payload_container
  * @param {number} bits_per_sample
@@ -123,6 +134,36 @@ export function embed_image_rgba(rgba_pixels, payload_container, bits_per_channe
         throw e;
     }
     const ret = wasm.embed_image_rgba(ptr0, len0, ptr1, len1, val3);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v4 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v4;
+}
+
+/**
+ * @param {Uint8Array | number[]} image_bytes
+ * @param {Uint8Array | number[]} secret_data
+ * @param {string | null} [password]
+ * @returns {Uint8Array}
+ */
+export function embed_robust_image(image_bytes, secret_data, password) {
+    let ptr0, len0, ptr1, len1, ptr2, len2;
+    try {
+        ptr0 = passArray8ToWasm0(image_bytes, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArray8ToWasm0(secret_data, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+        ptr2 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len2 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr2) { wasm.__wbindgen_free(ptr2, len2 * 1, 1); }
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.embed_robust_image(ptr0, len0, ptr1, len1, ptr2, len2);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -223,6 +264,32 @@ export function extract_raw_bits_image_rgba(rgba_pixels, bits_per_channel, max_b
     var v4 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
     return v4;
+}
+
+/**
+ * @param {Uint8Array | number[]} image_bytes
+ * @param {string | null} [password]
+ * @returns {Uint8Array}
+ */
+export function extract_robust_image(image_bytes, password) {
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(image_bytes, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.extract_robust_image(ptr0, len0, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v3;
 }
 
 /**

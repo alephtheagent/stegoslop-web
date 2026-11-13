@@ -128,9 +128,17 @@
           <input type="hidden" id="inject-filename-input" value="">
         </div>
 
-        <!-- Density & Password Bar -->
+        <!-- Engine, Density & Password Bar -->
         <div class="controls-row">
-          <div class="density-selector">
+          <div class="mode-selector">
+            <span class="label-quiet">Engine</span>
+            <div class="segmented-control">
+              <button id="btn-engine-lsb" class="seg-btn active" type="button">LSB</button>
+              <button id="btn-engine-robust" class="seg-btn" type="button" title="Resistant to Telegram & JPEG compression">Robust</button>
+            </div>
+          </div>
+
+          <div id="density-selector-wrap" class="density-selector">
             <span class="label-quiet">Density</span>
             <div class="segmented-control">
               <button class="seg-btn" data-bpu="1" type="button">1b</button>
@@ -204,7 +212,16 @@
         </div>
 
         <div class="controls-row">
-          <div class="density-selector">
+          <div class="mode-selector">
+            <span class="label-quiet">Engine</span>
+            <div class="segmented-control">
+              <button id="btn-extract-engine-auto" class="seg-btn active" type="button">Auto</button>
+              <button id="btn-extract-engine-lsb" class="seg-btn" type="button">LSB</button>
+              <button id="btn-extract-engine-robust" class="seg-btn" type="button">Robust</button>
+            </div>
+          </div>
+
+          <div id="extract-density-wrap" class="density-selector">
             <span class="label-quiet">Density</span>
             <div class="segmented-control">
               <button class="seg-btn extract-bpu" data-bpu="1" type="button">1b</button>

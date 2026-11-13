@@ -17,6 +17,7 @@ const state = {
     carrierName: null,
     carrierBytes: null,
     carrierMeta: null,
+    engine: 'lsb', // 'lsb' | 'robust'
     bpu: 2,
     payloadMode: 'text', // 'text' | 'file'
     payloadBytes: null,
@@ -29,6 +30,7 @@ const state = {
     carrierType: null,
     carrierName: null,
     carrierBytes: null,
+    engine: 'auto', // 'auto' | 'lsb' | 'robust'
     bpu: 2,
     extractedPayload: null,
     extractedBlobUrl: null,
@@ -241,6 +243,33 @@ function bindInjectTab() {
     const isPlaying = state.players.injectAudio.togglePlay();
     btnAudioPlay.textContent = isPlaying ? '⏸' : '▶';
   });
+
+  // Engine Selector (LSB vs Robust)
+  const btnEngineLsb = document.getElementById('btn-engine-lsb');
+  const btnEngineRobust = document.getElementById('btn-engine-robust');
+  const densityWrap = document.getElementById('density-selector-wrap');
+
+  if (btnEngineLsb && btnEngineRobust) {
+    btnEngineLsb.addEventListener('click', () => {
+      btnEngineLsb.classList.add('active');
+      btnEngineRobust.classList.remove('active');
+      state.inject.engine = 'lsb';
+      if (densityWrap) densityWrap.style.display = 'flex';
+      updateInjectCapacity();
+    });
+
+    btnEngineRobust.addEventListener('click', () => {
+      if (state.inject.carrierType === 'audio') {
+        showToast('Robust mode is for images only (survives JPEG/Telegram compression)', 'info');
+        return;
+      }
+      btnEngineRobust.classList.add('active');
+      btnEngineLsb.classList.remove('active');
+      state.inject.engine = 'robust';
+      if (densityWrap) densityWrap.style.display = 'none';
+      updateInjectCapacity();
+    });
+  }
 
   // BPU Selectors
   const bpuButtons = document.querySelectorAll('#tab-inject .seg-btn[data-bpu]');
@@ -461,13 +490,19 @@ async function handleInjectPayloadFile(file) {
 }
 
 function updateInjectCapacity() {
-  const { carrierType, carrierMeta, bpu, payloadMode, payloadBytes, encrypt } = state.inject;
+  const { carrierType, carrierMeta, bpu, payloadMode, payloadBytes, encrypt, engine } = state.inject;
   let maxCapacity = 0;
 
-  if (carrierType === 'image' && carrierMeta) {
-    maxCapacity = wasm.compute_image_capacity(carrierMeta.width, carrierMeta.height, bpu);
-  } else if (carrierType === 'audio' && carrierMeta) {
-    maxCapacity = (carrierMeta.total_samples * bpu) / 8;
+  if (engine === 'robust') {
+    if (carrierType === 'image' && carrierMeta) {
+      maxCapacity = wasm.compute_robust_image_capacity(carrierMeta.width, carrierMeta.height, encrypt);
+    }
+  } else {
+    if (carrierType === 'image' && carrierMeta) {
+      maxCapacity = wasm.compute_image_capacity(carrierMeta.width, carrierMeta.height, bpu);
+    } else if (carrierType === 'audio' && carrierMeta) {
+      maxCapacity = (carrierMeta.total_samples * bpu) / 8;
+    }
   }
 
   let payloadSize = 0;
@@ -478,12 +513,16 @@ function updateInjectCapacity() {
     payloadSize = payloadBytes.length;
   }
 
-  // Protocol header overhead: 14 bytes base + 28 bytes if encrypted (salt + IV) + filename
-  const virtualFilename = document.getElementById('inject-filename-input').value.trim();
-  const filenameOverhead = virtualFilename.length > 0 ? 1 + new TextEncoder().encode(virtualFilename).length : 0;
-  const headerOverhead = 14 + (encrypt ? 28 : 0) + filenameOverhead;
-
-  const totalRequired = payloadSize > 0 ? payloadSize + headerOverhead : 0;
+  let totalRequired = 0;
+  if (engine === 'robust') {
+    totalRequired = payloadSize;
+  } else {
+    // Protocol header overhead: 14 bytes base + 28 bytes if encrypted (salt + IV) + filename
+    const virtualFilename = document.getElementById('inject-filename-input').value.trim();
+    const filenameOverhead = virtualFilename.length > 0 ? 1 + new TextEncoder().encode(virtualFilename).length : 0;
+    const headerOverhead = 14 + (encrypt ? 28 : 0) + filenameOverhead;
+    totalRequired = payloadSize > 0 ? payloadSize + headerOverhead : 0;
+  }
 
   const meterLabel = document.getElementById('capacity-meter-label');
   const meterBar = document.getElementById('capacity-meter-bar');
@@ -520,7 +559,9 @@ function updateInjectCapacity() {
     statusBadge.style.color = 'var(--teal-primary)';
   }
 
-  carrierInfo.textContent = `${carrierType === 'image' ? 'Image' : 'Audio'} @ ${bpu} bpu`;
+  carrierInfo.textContent = engine === 'robust'
+    ? 'Robust DWT (JPEG-Resistant)'
+    : `${carrierType === 'image' ? 'Image' : 'Audio'} @ ${bpu} bpu`;
 }
 
 async function executeInject() {
@@ -561,28 +602,38 @@ async function executeInject() {
   try {
     const t0 = performance.now();
 
-    // 1. Pack secret into SLOP binary container
-    const packedContainer = wasm.pack(payloadTypeCode, rawSecretBytes, password, bpu, virtualFilename);
-
     let stegoBytes;
     let mimeType;
     let extension;
 
-    // 2. Embed into carrier
-    if (carrierType === 'image') {
-      stegoBytes = wasm.embed_image(carrierBytes, packedContainer, bpu);
+    if (state.inject.engine === 'robust') {
+      if (carrierType !== 'image') {
+        showToast('Robust mode is for images only (survives JPEG/Telegram compression)', 'error');
+        return;
+      }
+      stegoBytes = wasm.embed_robust_image(carrierBytes, rawSecretBytes, password);
       mimeType = 'image/png';
       extension = 'png';
-    } else if (carrierType === 'audio') {
-      stegoBytes = wasm.embed_audio(carrierBytes, packedContainer, bpu);
-      mimeType = 'audio/wav';
-      extension = 'wav';
+    } else {
+      // 1. Pack secret into SLOP binary container
+      const packedContainer = wasm.pack(payloadTypeCode, rawSecretBytes, password, bpu, virtualFilename);
+
+      // 2. Embed into carrier
+      if (carrierType === 'image') {
+        stegoBytes = wasm.embed_image(carrierBytes, packedContainer, bpu);
+        mimeType = 'image/png';
+        extension = 'png';
+      } else if (carrierType === 'audio') {
+        stegoBytes = wasm.embed_audio(carrierBytes, packedContainer, bpu);
+        mimeType = 'audio/wav';
+        extension = 'wav';
+      }
     }
 
     const elapsed = Math.round(performance.now() - t0);
     const blob = new Blob([stegoBytes], { type: mimeType });
     const baseName = state.inject.carrierName.replace(/\.[^/.]+$/, '');
-    const stegoFilename = `stego_${baseName}.${extension}`;
+    const stegoFilename = state.inject.engine === 'robust' ? `robust_${baseName}.${extension}` : `stego_${baseName}.${extension}`;
 
     state.inject.stegoBlob = blob;
     state.inject.stegoFilename = stegoFilename;
@@ -591,7 +642,9 @@ async function executeInject() {
     const resultCard = document.getElementById('inject-result-card');
     resultCard.classList.remove('hidden');
 
-    document.getElementById('result-badge-carrier').textContent = `${extension.toUpperCase()} Stego (${formatBytes(blob.size)})`;
+    document.getElementById('result-badge-carrier').textContent = state.inject.engine === 'robust'
+      ? `Robust PNG (${formatBytes(blob.size)})`
+      : `${extension.toUpperCase()} Stego (${formatBytes(blob.size)})`;
     document.getElementById('inject-result-summary').innerHTML = `
       Successfully injected <strong>${formatBytes(rawSecretBytes.length)}</strong> payload 
       in <strong>${elapsed}ms</strong> at <strong>${bpu} bits/unit</strong>.<br>
@@ -635,6 +688,26 @@ function bindExtractTab() {
   btnTogglePwd.addEventListener('click', () => {
     pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
   });
+
+  // Extract Engine Selectors
+  const btnExtAuto = document.getElementById('btn-extract-engine-auto');
+  const btnExtLsb = document.getElementById('btn-extract-engine-lsb');
+  const btnExtRobust = document.getElementById('btn-extract-engine-robust');
+  const extDensityWrap = document.getElementById('extract-density-wrap');
+
+  const setExtractEngine = (mode) => {
+    state.extract.engine = mode;
+    if (btnExtAuto) btnExtAuto.classList.toggle('active', mode === 'auto');
+    if (btnExtLsb) btnExtLsb.classList.toggle('active', mode === 'lsb');
+    if (btnExtRobust) btnExtRobust.classList.toggle('active', mode === 'robust');
+    if (extDensityWrap) {
+      extDensityWrap.style.display = mode === 'robust' ? 'none' : 'flex';
+    }
+  };
+
+  if (btnExtAuto) btnExtAuto.addEventListener('click', () => setExtractEngine('auto'));
+  if (btnExtLsb) btnExtLsb.addEventListener('click', () => setExtractEngine('lsb'));
+  if (btnExtRobust) btnExtRobust.addEventListener('click', () => setExtractEngine('robust'));
 
   // Extract BPU Selector
   const bpuButtons = document.querySelectorAll('.extract-bpu');
@@ -708,21 +781,45 @@ async function executeExtract() {
   const password = document.getElementById('extract-password-input').value || null;
 
   try {
-    let containerBytes;
-    if (carrierType === 'image') {
-      containerBytes = wasm.extract_image(carrierBytes, bpu);
-    } else {
-      containerBytes = wasm.extract_audio(carrierBytes, bpu);
+    let unpacked = null;
+    let isRobust = false;
+
+    if (carrierType === 'image' && (state.extract.engine === 'robust' || state.extract.engine === 'auto')) {
+      try {
+        const raw = wasm.extract_robust_image(carrierBytes, password);
+        unpacked = {
+          payload_type: 1,
+          payload_type_name: 'Robust Text',
+          data: raw,
+          is_encrypted: !!password,
+          bits_per_unit: 0,
+          file_name: null,
+          is_corrupted: false,
+        };
+        isRobust = true;
+      } catch (err) {
+        if (state.extract.engine === 'robust') {
+          throw err;
+        }
+      }
     }
 
-    const unpacked = wasm.unpack(containerBytes, password);
+    if (!unpacked) {
+      let containerBytes;
+      if (carrierType === 'image') {
+        containerBytes = wasm.extract_image(carrierBytes, bpu);
+      } else {
+        containerBytes = wasm.extract_audio(carrierBytes, bpu);
+      }
+      unpacked = wasm.unpack(containerBytes, password);
+    }
 
     // Hide empty state, show result
     document.getElementById('extract-empty-state').style.display = 'none';
     document.getElementById('extract-result-content').style.display = 'block';
 
     // Update chips
-    document.getElementById('extract-chip-type').textContent = `Type: ${unpacked.payload_type_name}`;
+    document.getElementById('extract-chip-type').textContent = isRobust ? 'Robust DWT' : `Type: ${unpacked.payload_type_name}`;
     document.getElementById('extract-chip-crypto').textContent = unpacked.is_encrypted ? 'AES-256-GCM Verified' : 'Unencrypted';
     document.getElementById('extract-chip-crypto').className = unpacked.is_encrypted ? 'badge-chip green' : 'badge-chip purple';
     document.getElementById('extract-chip-crc').textContent = unpacked.is_corrupted ? 'CRC Check Failed' : 'CRC-32 Valid';
