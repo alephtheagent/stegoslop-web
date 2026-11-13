@@ -422,12 +422,33 @@ async function handleInjectCarrierFile(file) {
     img.src = imgUrl;
     await img.decode();
 
+    let finalBytes = bytes;
+    let finalWidth = img.naturalWidth;
+    let finalHeight = img.naturalHeight;
+
+    // Clamp to 1280 max to prevent Telegram from geometrically resampling the photo!
+    if (finalWidth > 1280 || finalHeight > 1280) {
+      const scale = 1280 / Math.max(finalWidth, finalHeight);
+      finalWidth = Math.floor((finalWidth * scale) / 8) * 8;
+      finalHeight = Math.floor((finalHeight * scale) / 8) * 8;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = finalWidth;
+      canvas.height = finalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      finalBytes = new Uint8Array(await blob.arrayBuffer());
+      state.inject.carrierBytes = finalBytes;
+      showToast(`Optimized to ${finalWidth}x${finalHeight} to prevent Telegram downscale`, 'info');
+    }
+
     state.inject.carrierMeta = {
-      width: img.naturalWidth,
-      height: img.naturalHeight,
-      totalPixels: img.naturalWidth * img.naturalHeight,
+      width: finalWidth,
+      height: finalHeight,
+      totalPixels: finalWidth * finalHeight,
     };
-    previewMeta.textContent = `${img.naturalWidth} x ${img.naturalHeight} • ${formatBytes(file.size)}`;
+    previewMeta.textContent = `${finalWidth} x ${finalHeight} • ${formatBytes(finalBytes.length)}`;
   } else if (isWav) {
     state.inject.carrierType = 'audio';
     previewThumb.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🎵</text></svg>';
@@ -645,11 +666,20 @@ async function executeInject() {
     document.getElementById('result-badge-carrier').textContent = state.inject.engine === 'robust'
       ? `Robust PNG (${formatBytes(blob.size)})`
       : `${extension.toUpperCase()} Stego (${formatBytes(blob.size)})`;
-    document.getElementById('inject-result-summary').innerHTML = `
-      Successfully injected <strong>${formatBytes(rawSecretBytes.length)}</strong> payload 
-      in <strong>${elapsed}ms</strong> at <strong>${bpu} bits/unit</strong>.<br>
-      Container size: ${formatBytes(packedContainer.length)} • SLOP v1 header sealed with CRC-32.
-    `;
+
+    const summaryEl = document.getElementById('inject-result-summary');
+    if (state.inject.engine === 'robust') {
+      summaryEl.innerHTML = `
+        Injected <strong>${formatBytes(rawSecretBytes.length)}</strong> via <strong>Robust DWT-QIM</strong> in <strong>${elapsed}ms</strong>.<br>
+        Resistant to lossy JPEG & Telegram photo compression.
+      `;
+    } else {
+      summaryEl.innerHTML = `
+        Successfully injected <strong>${formatBytes(rawSecretBytes.length)}</strong> payload 
+        in <strong>${elapsed}ms</strong> at <strong>${bpu} bits/unit</strong>.<br>
+        Container size: ${formatBytes(packedContainer.length)} • SLOP v1 header sealed with CRC-32.
+      `;
+    }
 
     showToast(`Stego carrier created in ${elapsed}ms!`, 'success');
   } catch (err) {
